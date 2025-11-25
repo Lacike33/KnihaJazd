@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { TopBar } from "@/features/landingPage/components/top-bar";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -9,8 +10,10 @@ export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-      <nav className="container mx-auto flex h-16 items-center justify-between px-4">
+    <>
+      <TopBar />
+      <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <nav className="container mx-auto flex h-16 items-center justify-between px-4 border-b border-border">
         <div className="flex items-center gap-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6 text-primary-foreground">
@@ -45,30 +48,31 @@ export function Header() {
         <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
           {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
-      </nav>
-
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="border-t md:hidden">
-          <div className="container mx-auto space-y-4 px-4 py-6">
-            <a href="#features" className="block text-sm font-medium hover:text-primary">
-              Funkcie
-            </a>
-            <a href="#pricing" className="block text-sm font-medium hover:text-primary">
-              Cenník
-            </a>
-            <a href="#partners" className="block text-sm font-medium hover:text-primary">
-              Pre partnerov
-            </a>
-            <a href="#faq" className="block text-sm font-medium hover:text-primary">
-              FAQ
-            </a>
-            <Link href={"/dashboard"}>
-              <Button className="w-full">Vyskúšať zadarmo</Button>
-            </Link>
+        
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="absolute top-full left-0 right-0 border-t md:hidden bg-background">
+            <div className="container mx-auto space-y-4 px-4 py-6">
+              <a href="#features" className="block text-sm font-medium hover:text-primary">
+                Funkcie
+              </a>
+              <a href="#pricing" className="block text-sm font-medium hover:text-primary">
+                Cenník
+              </a>
+              <a href="#partners" className="block text-sm font-medium hover:text-primary">
+                Pre partnerov
+              </a>
+              <a href="#faq" className="block text-sm font-medium hover:text-primary">
+                FAQ
+              </a>
+              <Link href={"/dashboard"}>
+                <Button className="w-full">Vyskúšať zadarmo</Button>
+              </Link>
+            </div>
           </div>
-        </div>
-      )}
-    </header>
+        )}
+      </nav>
+      </header>
+    </>
   );
 }
