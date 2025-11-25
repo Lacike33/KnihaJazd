@@ -17,7 +17,7 @@ return {
 
 /v1/drivers?page=1&pageSize=9
 
-```
+```ts
 driver: {
         id: "1",
         name: "Peter Novák",
@@ -26,13 +26,24 @@ driver: {
         defaultVehicleId: "1",
         drivingPermission: "only_default",
       },
+
+export type DriverType = {
+  id: string;
+  name: string;
+  userId: string;
+  role: UserRole;
+  defaultVehicleId: string | null;
+  drivingPermission: DrivingPermission;
+};
+
+export type DrivingPermission = "only_default" | "all" | "restricted";
 ```
 
 ## Vehicles CRUD
 
 /v1/vehicles?page=1&pageSize=9
 
-```
+```ts
   vehicle: {
         id: "1",
         registrationNo: "BA123CD",
@@ -69,13 +80,60 @@ driver: {
           notes: "Poistenie zahŕňa havarijné aj PZP",
         },
       },
+
+export type VehicleType = {
+  id: string;
+  registrationNo: string;
+  brand: string;
+  model: string;
+  year: number;
+  vin: string;
+  odoInitialKm: number;
+  ownershipType: OwnershipType;
+  registrationDate: string;
+  vatRegime: VatRegime;
+  autoImportEnabled: boolean;
+  templateUsageEnabled: boolean;
+  kmMatchingTolerance: number;
+  active: boolean;
+  imageUrl?: string | null;
+  fuelConsumption: {
+    fuelType: FuelType;
+    averageConsumption: number;
+    cityConsumption: number;
+    highwayConsumption: number;
+    combinedConsumption: number;
+  };
+  insurance: VehicleInsuranceType | null;
+};
+
+export type VehicleInsuranceType = {
+  id: string;
+  vehicleId: string;
+  provider?: string;
+  policyNumber: string;
+  validFrom: string;
+  validTo: string;
+  type: string;
+  reminderDays: number;
+  cost: number;
+  notes?: string | null;
+  insuranceCompany: string;
+};
+
+export type FuelType = "petrol" | "diesel" | "electric" | "hybrid" | "other";
+export type OwnershipType = "company" | "private";
+export type VatRegime = "100_business" | "50_mixed" | "0_private";
+
 ```
+
+
 
 ## Trips CRUD
 
 tuna mozno driver a vehicle mozu byt optional alebo uipne iny ep kde bude chodit vsetko, musim pozret ako to pouzivame na FE ci vzdy potrebujeme drivera aj vehicle pri tripe alebo nie
 
-```
+```ts
 // /v1/trips?page=1&pageSize=9
 
 [
@@ -283,4 +341,35 @@ tuna mozno driver a vehicle mozu byt optional alebo uipne iny ep kde bude chodit
       },
     },
   ];
+
+  export type Trip = {
+  id: string;
+  vehicleId: string;
+  driverId: string;
+  startLocation: string | null;
+  endLocation: string | null;
+  distanceKm: number;
+  startTime: string;
+  endTime: string;
+  startOdometer: number;
+  endOdometer: number;
+  odometerPhotoUrl: string | null;
+  odometerPhotoTakenBy: string | null;
+  odometerPhotoTakenAt: string | null;
+  ocrOriginalValue: number | null;
+  ocrCorrectedValue: number | null;
+  templateName: string | null;
+  type: TripType;
+  description: string | null;
+  source: TripSource;
+  locked: boolean;
+  createdAt: string;
+  updatedAt: string;
+  driver: DriverType;
+  vehicle: VehicleType;
+};
+
+export type TripType = "business" | "personal" | "commute" | "other" | "private";
+export type TripSource = "gps_auto" | "manual" | "imported" | "other" | "gps_corrected";
+
 ```
