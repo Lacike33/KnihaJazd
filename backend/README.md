@@ -50,8 +50,31 @@ python manage.py runserver
 POST /api/v1/users/auth/login/     # Prihlásenie (JWT)
 POST /api/v1/users/auth/refresh/   # Refresh token  
 POST /api/v1/users/auth/verify/    # Validácia tokenu (200/401)
-POST /api/v1/users/auth/register/  # Registrácia
+POST /api/v1/users/auth/register/  # Registrácia (client/partner org)
 GET  /api/v1/users/me/             # Aktuálny používateľ
+```
+
+#### Registrácia - typy organizácií
+```json
+// Client organizácia (default)
+{
+  "email": "user@example.com",
+  "password": "pass123",
+  "organization": {
+    "name": "My Company",
+    "type": "client"  // optional, default
+  }
+}
+
+// Partner organizácia (predajca automobilov)
+{
+  "email": "partner@autodom.sk", 
+  "password": "pass123",
+  "organization": {
+    "name": "Auto DOM s.r.o.",
+    "type": "partner"
+  }
+}
 ```
 
 #### User Management
