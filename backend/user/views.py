@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import Group
 from django.db import transaction
 from django.utils import timezone
 
@@ -173,22 +174,26 @@ class UserListView(APIView):
     
     def get(self, request):
         """Vráti zoznam používateľov v organizácii."""
-        if not request.user.organization:
-            return Response(
-                {"detail": "Používateľ nemá priradenú organizáciu."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        users = CustomUser.objects.filter(
-            organization=request.user.organization
-        ).select_related('organization').prefetch_related('groups')
+        # Superuser vidí všetkých používateľov
+        if request.user.is_superuser:
+            users = CustomUser.objects.all().select_related('organization').prefetch_related('groups')
+        else:
+            if not request.user.organization:
+                return Response(
+                    {"detail": "Používateľ nemá priradenú organizáciu."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            users = CustomUser.objects.filter(
+                organization=request.user.organization
+            ).select_related('organization').prefetch_related('groups')
         
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
     
     def post(self, request):
         """Vytvorí nového používateľa v organizácii."""
-        if not request.user.can_manage_organization:
+        if not request.user.is_superuser and not request.user.can_manage_organization:
             return Response(
                 {"detail": "Nemáte oprávnenie pridávať používateľov."},
                 status=status.HTTP_403_FORBIDDEN
@@ -227,10 +232,16 @@ class UserDetailView(APIView):
     def get_user_object(self, request, user_id):
         """Vráti používateľa ak má aktuálny používateľ oprávnenie."""
         try:
-            user = CustomUser.objects.select_related('organization').prefetch_related('groups').get(
-                id=user_id,
-                organization=request.user.organization
-            )
+            # Superuser môže pristupovať k ľubovoľnému používateľovi
+            if request.user.is_superuser:
+                user = CustomUser.objects.select_related('organization').prefetch_related('groups').get(
+                    id=user_id
+                )
+            else:
+                user = CustomUser.objects.select_related('organization').prefetch_related('groups').get(
+                    id=user_id,
+                    organization=request.user.organization
+                )
             return user
         except CustomUser.DoesNotExist:
             return None
@@ -249,7 +260,7 @@ class UserDetailView(APIView):
     
     def put(self, request, user_id):
         """Aktualizuje používateľa (plná aktualizácia)."""
-        if not request.user.can_manage_organization:
+        if not request.user.is_superuser and not request.user.can_manage_organization:
             return Response(
                 {"detail": "Nemáte oprávnenie upravovať používateľov."},
                 status=status.HTTP_403_FORBIDDEN
@@ -270,7 +281,7 @@ class UserDetailView(APIView):
     
     def patch(self, request, user_id):
         """Aktualizuje používateľa (čiastočná aktualizácia)."""
-        if not request.user.can_manage_organization:
+        if not request.user.is_superuser and not request.user.can_manage_organization:
             return Response(
                 {"detail": "Nemáte oprávnenie upravovať používateľov."},
                 status=status.HTTP_403_FORBIDDEN
@@ -291,7 +302,7 @@ class UserDetailView(APIView):
     
     def delete(self, request, user_id):
         """Zmaže používateľa."""
-        if not request.user.can_manage_organization:
+        if not request.user.is_superuser and not request.user.can_manage_organization:
             return Response(
                 {"detail": "Nemáte oprávnenie mazať používateľov."},
                 status=status.HTTP_403_FORBIDDEN
@@ -357,7 +368,7 @@ class RegisterView(APIView):
     @extend_schema(
         operation_id='user_register',
         summary='Registrácia nového používateľa',
-        description='Registruje nového používateľa a automaticky vytvorí novú organizáciu. Používateľ sa nastaví ako admin organizácie.',
+        description='Registruje nového používateľa s emailom a heslom. Username je optional - pre zobrazenie sa používa first_name + last_name. Automaticky sa vytvorí nová organizácia s typom "client" alebo "partner".',
         tags=['Autentifikácia'],
         request=UserRegistrationSerializer,
         responses={
@@ -366,17 +377,37 @@ class RegisterView(APIView):
         },
         examples=[
             OpenApiExample(
-                'Registrácia používateľa',
+                'Registrácia klienta (default)',
                 value={
-                    'username': 'newuser',
-                    'email': 'user@example.com',
+                    'email': 'client@example.com',
                     'password': 'securepassword123',
                     'password_confirm': 'securepassword123',
                     'first_name': 'John',
                     'last_name': 'Doe',
+                    'position': 'Manager',
+                    'phone': '+421901234567',
                     'organization': {
                         'name': 'My Company',
-                        'address': 'Bratislava, Slovakia'
+                        'address': 'Bratislava, Slovakia',
+                        'type': 'client'
+                    }
+                },
+                request_only=True
+            ),
+            OpenApiExample(
+                'Registrácia partnera',
+                value={
+                    'email': 'partner@autodom.sk',
+                    'password': 'partnerpass123',
+                    'password_confirm': 'partnerpass123',
+                    'first_name': 'Peter',
+                    'last_name': 'Predajca',
+                    'position': 'Sales Manager',
+                    'phone': '+421907123456',
+                    'organization': {
+                        'name': 'Auto DOM s.r.o.',
+                        'address': 'Hlavná 123, Bratislava',
+                        'type': 'partner'
                     }
                 },
                 request_only=True
@@ -391,18 +422,35 @@ class RegisterView(APIView):
                 # Vytvorí používateľa
                 user = serializer.save()
                 
-                # Vytvorí novú organizáciu
+                # Vytvorí novú organizáciu s podporou client/partner typov
                 org_data = request.data.get('organization', {})
+                
+                # Určí typ organizácie - default 'client', podporované: 'client', 'partner'
+                org_type = org_data.get('type', 'client')
+                if org_type not in ['client', 'partner']:
+                    org_type = 'client'  # Fallback na default ak je neplatný typ
+                
                 organization = Organization.objects.create(
                     name=org_data.get('name', f"Organizácia používateľa {user.username}"),
                     address=org_data.get('address', 'Nezadané'),
-                    organization_type='client'
+                    organization_type=org_type
                 )
                 
                 # Priradí používateľa k organizácii a nastaví ako admin
                 user.organization = organization
                 user.is_organization_admin = True
                 user.save()
+                
+                # Prideľ Django Group "Administrátori"
+                try:
+                    admin_group = Group.objects.get(name='Administrátori')
+                    user.groups.add(admin_group)
+                except Group.DoesNotExist:
+                    # Ak group neexistuje, vytvoríme warning ale neprerušíme registráciu
+                    pass
+            
+            # Načítaj user s groups a organization pre serializer
+            user = CustomUser.objects.select_related('organization').prefetch_related('groups').get(pk=user.pk)
             
             # Vráti údaje nového používateľa
             response_serializer = UserProfileSerializer(user)
