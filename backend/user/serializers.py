@@ -64,7 +64,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'can_manage_organization', 'groups', 'group_ids', 'permissions'
         ]
         read_only_fields = [
-            'id', 'username', 'date_joined', 'last_login', 'is_active',
+            'id', 'date_joined', 'last_login', 'is_active',
             'is_organization_admin'
         ]
     
@@ -86,6 +86,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
         if user and CustomUser.objects.exclude(pk=user.pk).filter(email=value).exists():
             raise serializers.ValidationError("Používateľ s týmto emailom už existuje.")
         return value
+    
+    def validate_username(self, value):
+        """Validácia unique username pri aktualizácii (optional)."""
+        if not value:  # Username je optional
+            return value
+            
+        user = self.instance
+        if user and CustomUser.objects.exclude(pk=user.pk).filter(username=value).exists():
+            raise serializers.ValidationError("Používateľ s týmto používateľským menom už existuje.")
+        return value
 
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -100,7 +110,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = [
-            'username', 'email', 'password', 'password_confirm',
+            'email', 'password', 'password_confirm',
             'first_name', 'last_name', 'position', 'phone'
         ]
     
@@ -118,16 +128,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Používateľ s týmto emailom už existuje.")
         return value
     
-    def validate_username(self, value):
-        """Validácia unique username."""
-        if CustomUser.objects.filter(username=value).exists():
-            raise serializers.ValidationError("Používateľ s týmto používateľským menom už existuje.")
-        return value
+    # def validate_username(self, value):
+    #     """Validácia unique username."""
+    #     if CustomUser.objects.filter(username=value).exists():
+    #         raise serializers.ValidationError("Používateľ s týmto používateľským menom už existuje.")
+    #     return value
     
     def create(self, validated_data):
         """Vytvorí nového používateľa s hash-ovaným heslom."""
         # Odstráni password_confirm z validated_data
         validated_data.pop('password_confirm')
+        
+        # Username je optional - ak nie je zadaný, použije sa email ako fallback
+        # Pre zobrazenie používame first_name + last_name
+        if 'username' not in validated_data or not validated_data.get('username'):
+            # Nastavíme username na email pre Django internal potreby
+            validated_data['username'] = validated_data['email']
         
         # Vytvorí používateľa s hash-ovaným heslom
         password = validated_data.pop('password')

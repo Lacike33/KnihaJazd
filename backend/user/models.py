@@ -7,7 +7,48 @@ Používa Django Groups & Permissions pre komplexnú správu rolí.
 """
 
 from django.db import models
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.models import AbstractUser, Group, Permission, BaseUserManager
+
+
+class CustomUserManager(BaseUserManager):
+    """
+    Custom UserManager pre CustomUser model.
+    
+    Spravuje vytváranie používateľov s email ako USERNAME_FIELD.
+    """
+    
+    def create_user(self, email, password=None, **extra_fields):
+        """Vytvorí a uloží bežného používateľa."""
+        if not email:
+            raise ValueError('Email musí byť zadaný')
+        
+        email = self.normalize_email(email)
+        
+        # Username nastavíme na email ak nie je zadaný
+        if 'username' not in extra_fields or not extra_fields['username']:
+            extra_fields['username'] = email
+            
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+    
+    def create_superuser(self, email, password=None, **extra_fields):
+        """Vytvorí a uloží superuser používateľa."""
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+        extra_fields.setdefault('is_organization_admin', False)  # Superuser nie je org admin
+        
+        # Superuser nemá organizáciu - je systémový admin
+        extra_fields.setdefault('organization', None)
+        
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser musí mať is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser musí mať is_superuser=True.')
+            
+        return self.create_user(email, password, **extra_fields)
 
 
 class CustomUser(AbstractUser):
@@ -22,7 +63,10 @@ class CustomUser(AbstractUser):
     
     # DÔLEŽITÉ: Email ako username field
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']  # Dodatočné polia pre createsuperuser
+    REQUIRED_FIELDS = []  # Žiadne dodatočné povinné polia
+    
+    # Custom manager
+    objects = CustomUserManager()
     
     # Prepísanie email fieldu aby bol unique
     email = models.EmailField(
@@ -99,9 +143,18 @@ class CustomUser(AbstractUser):
         ]
     
     def __str__(self):
+        """String reprezentácia používateľa pomocou mena."""
+        full_name = self.get_full_name()
+        if full_name:
+            display_name = full_name
+        elif self.username and self.username != self.email:
+            display_name = self.username
+        else:
+            display_name = self.email
+            
         if self.organization:
-            return f"{self.get_full_name()} ({self.organization.name})"
-        return self.get_full_name() or self.username
+            return f"{display_name} ({self.organization.name})"
+        return display_name
     
     @property
     def can_manage_organization(self):
