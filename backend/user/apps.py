@@ -8,9 +8,8 @@ class UserConfig(AppConfig):
     
     def ready(self):
         """
-        Registrácia signals pri štarte aplikácie.
+        Aplikácia je pripravená na použitie.
         
-        Zabezpečuje že sa signals zaregistrujú keď sa aplikácia načíta
-        a budú fungovať automatické vytváranie organizácií.
+        V budúcnosti tu môžeme registrovať signals ak budú potrebné.
         """
-        import user.signals  # noqa
+        pass
