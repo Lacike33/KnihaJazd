@@ -97,7 +97,7 @@ const peopleNavigation = {
 
 function SidebarContent({ isCollapsed = false }: { isCollapsed?: boolean }) {
   const pathname = usePathname();
-  const { user, hasRole } = useAuth();
+  const { user, hasRole, logout } = useAuth();
 
   const [vehiclesOpen, setVehiclesOpen] = useState(false);
   const [tripsOpen, setTripsOpen] = useState(false);
@@ -114,6 +114,13 @@ function SidebarContent({ isCollapsed = false }: { isCollapsed?: boolean }) {
   const isVehiclesSectionActive = pathname.startsWith("/vehicles") || pathname.startsWith("/refuelings") || pathname.startsWith("/maintenance") || pathname.startsWith("/gps-devices") || pathname.startsWith("/odometer");
   const isReportsSectionActive = pathname.startsWith("/reports");
   const isPeopleSectionActive = pathname.startsWith("/drivers") || pathname.startsWith("/users");
+
+  const handleLogout = async () => {
+    const logoutResponse = await logoutClient();
+    if (logoutResponse.code === 204) {
+      logout();
+    }
+  };
 
   return (
     <div className="flex h-full flex-col">
@@ -300,16 +307,16 @@ function SidebarContent({ isCollapsed = false }: { isCollapsed?: boolean }) {
           <>
             <div className="mb-3 rounded-lg bg-sidebar-accent p-3">
               <div className="text-sm font-medium text-sidebar-accent-foreground">{user?.email}</div>
-              <div className="mt-1 text-xs text-muted-foreground capitalize">{user?.role}</div>
+              <div className="mt-1 text-xs text-muted-foreground capitalize">{user?.organization_type}</div>
             </div>
-            <Button variant="outline" className="w-full justify-start bg-transparent" onClick={logoutClient}>
+            <Button variant="outline" className="w-full justify-start bg-transparent" onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
               Odhlásiť sa
             </Button>
           </>
         )}
         {isCollapsed && (
-          <Button variant="outline" size="icon" className="w-full bg-transparent" onClick={logoutClient} title="Odhlásiť sa">
+          <Button variant="outline" size="icon" className="w-full bg-transparent" onClick={handleLogout} title="Odhlásiť sa">
             <LogOut className="h-4 w-4" />
           </Button>
         )}

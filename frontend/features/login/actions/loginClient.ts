@@ -20,8 +20,6 @@ export async function loginClient(prevState: TActionResponse, formData: FormData
     password: formData.get("password") as string,
   };
 
-  console.log(rawData);
-
   try {
     const response = await fetch(`${config.apiUrl}/v1/users/auth/login/`, {
       method: "POST",
@@ -35,7 +33,6 @@ export async function loginClient(prevState: TActionResponse, formData: FormData
     });
 
     const data = await response.json();
-    console.log(data);
 
     if (response.status === 401) {
       return {
@@ -52,9 +49,9 @@ export async function loginClient(prevState: TActionResponse, formData: FormData
     }
 
     if (response.status === 200) {
-      await setToken(data.data.access);
-      await setRefreshToken(data.data.refresh);
-      const decodedToken = (await jwtDecode(data.data.access)) as IJwtPayload;
+      await setToken(data.access);
+      await setRefreshToken(data.refresh);
+      const decodedToken = (await jwtDecode(data.access)) as IJwtPayload;
       return {
         code: response.status,
         message: data.message || "",
@@ -70,6 +67,7 @@ export async function loginClient(prevState: TActionResponse, formData: FormData
         },
       };
     }
+
     return {
       code: response.status,
       message: data.message || "",

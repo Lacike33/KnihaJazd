@@ -1,25 +1,16 @@
 "use client";
 
-import { useActionState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Car } from "lucide-react";
 import Link from "next/link";
-import { loginClient } from "@/features/login/actions/loginClient";
+import LoginForm from "@/features/login/components/loginForm";
+import { useAuth } from "@/providers/auth-provider";
+import { redirect } from "next/navigation";
 
 export default function LoginPage() {
-  const [state, formAction, isLoading] = useActionState(loginClient, {
-    code: 0,
-    message: "",
-    msg_code: "",
-    error: { isError: false },
-    inputs: {
-      email: "",
-    },
-    data: { userId: "" },
-  });
+  const { user } = useAuth();
+
+  if (user) redirect("/dashboard");
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted/30 p-4">
@@ -36,20 +27,7 @@ export default function LoginPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <form action={formAction} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" name="email" placeholder="vas@email.sk" required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Heslo</Label>
-              <Input id="password" type="password" name="password" required />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Prihlasujem..." : "Prihlásiť sa"}
-            </Button>
-            {state.error.isError && <p className="text-sm text-red-600">{state.message}</p>}
-          </form>
+          <LoginForm />
           <div className="mt-6 space-y-2 rounded-lg border bg-muted/50 p-4 text-sm">
             <p className="font-semibold text-foreground">Testovacie účty:</p>
             <div className="space-y-1 text-muted-foreground">

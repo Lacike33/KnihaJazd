@@ -3,16 +3,17 @@
 import type React from "react";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { getToken, removeToken, setToken } from "@/lib/api";
-import type { User, LoginResponse } from "@/lib/types";
+import { deleteTokens, getToken } from "@/features/login/actions/tokenActions";
+import { getCurrentUser } from "@/features/login/data/getCurrentUser";
+import { User } from "@/features/login/types/userTypes";
+import { redirect } from "next/navigation";
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (response: LoginResponse) => void;
-  logout: () => void;
   hasRole: (roles: string | string[]) => boolean;
+  login: () => void;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,49 +21,50 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
-  // useEffect(() => {
-  //   const initAuth = async () => {
-  //     const token = getToken()
-  //     if (!token) {
-  //       setLoading(false)
-  //       return
-  //     }
+  useEffect(() => {
+    const initAuth = async () => {
+      if (user) return;
 
-  //     try {
-  //       const userData = await getMe()
-  //       setUser(userData)
-  //     } catch (error) {
-  //       console.error("Auth error:", error)
-  //       removeToken()
-  //     } finally {
-  //       setLoading(false)
-  //     }
-  //   }
+      const token = getToken();
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
-  //   initAuth()
-  // }, [])
+      try {
+        const userData = await getCurrentUser();
+        setUser(userData);
+      } catch (error) {
+        console.error("Auth error:", error);
+        deleteTokens();
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const login = (response: LoginResponse) => {
-    setToken(response.access_token);
-    setUser(response.user);
-    router.push("/dashboard");
-  };
-
-  const logout = () => {
-    removeToken();
-    setUser(null);
-    router.push("/login");
-  };
+    initAuth();
+  }, [user]);
 
   const hasRole = (roles: string | string[]) => {
     if (!user) return false;
     const roleArray = Array.isArray(roles) ? roles : [roles];
-    return roleArray.includes(user.role);
+    return roleArray.includes("admin");
   };
 
-  return <AuthContext.Provider value={{ user, loading, login, logout, hasRole }}>{children}</AuthContext.Provider>;
+  const login = async () => {
+    const user = await getCurrentUser();
+
+    setUser(user);
+    redirect("/dashboard");
+  };
+
+  const logout = () => {
+    setUser(null);
+    redirect("/");
+  };
+
+  return <AuthContext.Provider value={{ user, loading, hasRole, login, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
