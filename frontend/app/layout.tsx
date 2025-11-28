@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kniha jázd | Elektronická evidencia podľa zákona 2026",
+  title: "Denník jázd | Elektronická evidencia podľa zákona 2026",
   description: "Jednoduchá elektronická evidencia jázd podľa § 85n zákona o DPH. Chráni podnikateľa, stráži povinnosti, odhalí chyby skôr než kontrola.",
   generator: "v0.app",
   icons: {
