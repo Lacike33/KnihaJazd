@@ -20,8 +20,10 @@ export async function loginClient(prevState: TActionResponse, formData: FormData
     password: formData.get("password") as string,
   };
 
+  console.log(rawData);
+
   try {
-    const response = await fetch(`${config.apiUrl}/v1/accounts/signin/`, {
+    const response = await fetch(`${config.apiUrl}/v1/users/auth/login/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
