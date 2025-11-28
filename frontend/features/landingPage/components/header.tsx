@@ -5,6 +5,8 @@ import {TopBar} from "@/features/landingPage/components/top-bar";
 import {Menu, X} from "lucide-react";
 import Link from "next/link";
 import {useState} from "react";
+import { APP_CONFIG } from "@/config/app";
+
 
 export function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,7 +28,7 @@ export function Header() {
                                 <circle cx="17" cy="17" r="2"/>
                             </svg>
                         </div>
-                        <span className="text-xl font-bold">Kniha jázd</span>
+                        <span className="text-xl font-bold">{APP_CONFIG.name}</span>
                     </div>
 
                     {/* Desktop Navigation */}
