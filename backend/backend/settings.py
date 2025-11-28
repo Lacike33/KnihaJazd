@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     # Local apps
     "api",
     "dashboard",
+    "organization",
+    "user",
     
     # Documentation
     "drf_spectacular",
@@ -207,3 +209,6 @@ SPECTACULAR_SETTINGS = {
         'name': 'Proprietárna licencia'
     },
 }
+
+# Custom User Model
+AUTH_USER_MODEL = 'user.CustomUser'
