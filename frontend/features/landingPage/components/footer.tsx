@@ -1,6 +1,7 @@
 import {Separator} from "@/components/ui/separator"
 import {APP_CONFIG} from "@/config/app";
 import Link from "next/link";
+import {NewsletterSection} from "@/features/landingPage/components/newsletter-section";
 
 export function Footer() {
     return (
@@ -77,25 +78,29 @@ export function Footer() {
                         </ul>
                     </div>
 
+                    {/*<div>*/}
+                    {/*    <h3 className="mb-4 font-semibold">Právne</h3>*/}
+                    {/*    <ul className="space-y-2 text-sm">*/}
+                    {/*        <li>*/}
+                    {/*            <a href="#" className="text-muted-foreground hover:text-foreground">*/}
+                    {/*                Podmienky používania*/}
+                    {/*            </a>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <a href="#" className="text-muted-foreground hover:text-foreground">*/}
+                    {/*                Ochrana osobných údajov (GDPR)*/}
+                    {/*            </a>*/}
+                    {/*        </li>*/}
+                    {/*        <li>*/}
+                    {/*            <a href="#" className="text-muted-foreground hover:text-foreground">*/}
+                    {/*                Cookies*/}
+                    {/*            </a>*/}
+                    {/*        </li>*/}
+                    {/*    </ul>*/}
+                    {/*</div>*/}
+
                     <div>
-                        <h3 className="mb-4 font-semibold">Právne</h3>
-                        <ul className="space-y-2 text-sm">
-                            <li>
-                                <a href="#" className="text-muted-foreground hover:text-foreground">
-                                    Podmienky používania
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" className="text-muted-foreground hover:text-foreground">
-                                    Ochrana osobných údajov (GDPR)
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" className="text-muted-foreground hover:text-foreground">
-                                    Cookies
-                                </a>
-                            </li>
-                        </ul>
+                        <NewsletterSection variant="compact"/>
                     </div>
                 </div>
 
@@ -104,7 +109,17 @@ export function Footer() {
                 <div
                     className="flex flex-col items-center justify-between gap-4 text-sm text-muted-foreground md:flex-row">
                     <p>© {new Date().getFullYear()} {APP_CONFIG.name}. Všetky práva vyhradené.</p>
-                    <p>Vyrobené s ❤️ na Slovensku</p>
+                    <div className="flex flex-wrap items-center justify-center gap-4">
+                        <Link href="/terms" className="hover:text-foreground transition-colors">
+                            Podmienky použitia
+                        </Link>
+                        <span>•</span>
+                        <Link href="/privacy" className="hover:text-foreground transition-colors">
+                            GDPR
+                        </Link>
+                        <span>•</span>
+                        <span>Vyrobené s ❤️ na Slovensku</span>
+                    </div>
                 </div>
             </div>
         </footer>

@@ -9,7 +9,7 @@ import {BlogCard} from "@/features/landingPage/blog/components/blog-card";
 import Link from "next/link";
 
 export default async function BlogPostPage({params}: { params: Promise<{ slug: string }> }) {
-    const { slug } = await params
+    const {slug} = await params
     const post = getBlogPostBySlug(slug)
 
     if (!post) {
@@ -49,7 +49,8 @@ export default async function BlogPostPage({params}: { params: Promise<{ slug: s
                                             className="w-12 h-12 rounded-full object-cover"
                                         />
                                     ) : (
-                                        <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                                        <div
+                                            className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
                                             <span className="text-sm font-semibold text-primary">
                                                 {post.author.name.split(' ').map(n => n[0]).join('').toUpperCase()}
                                             </span>
@@ -87,7 +88,8 @@ export default async function BlogPostPage({params}: { params: Promise<{ slug: s
                                     className="object-cover w-full h-full"
                                 />
                             ) : (
-                                <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+                                <div
+                                    className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
                                     <div className="text-center text-muted-foreground">
                                         <div className="text-6xl mb-4">📖</div>
                                         <div className="text-lg font-medium">{post.category}</div>
@@ -200,11 +202,13 @@ export default async function BlogPostPage({params}: { params: Promise<{ slug: s
                             className="mt-16 p-8 bg-gradient-to-br from-primary/10 to-accent/10 rounded-2xl text-center">
                             <h3 className="text-2xl font-bold mb-4">Pripravení začať?</h3>
                             <p className="text-muted-foreground mb-6 text-pretty">
-                                Vyskúšajte našu aplikáciu Kniha jázd zadarmo a uvidíte, ako jednoduché môže byť vedenie
+                                Vyskúšajte našu aplikáciu Denník jázd zadarmo a uvidíte, ako jednoduché môže byť vedenie
                                 knihy jázd.
                             </p>
                             <Button size="lg" className="gap-2">
-                                Vyskúšať zadarmo
+                                <Link href={'/register'}>
+                                    Vyskúšať zadarmo
+                                </Link>
                             </Button>
                         </div>
                     </div>
