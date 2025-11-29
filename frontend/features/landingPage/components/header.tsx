@@ -47,8 +47,8 @@ export function Header() {
                         <a href="#faq" className="text-sm font-medium hover:text-primary transition-colors">
                             FAQ
                         </a>
-                        <Link href={"/dashboard"}>
-                            <Button className="w-full">Vyskúšať zadarmo</Button>
+                        <Link href={"/demo"}>
+                            <Button className="w-full">Vyskúšať DEMO</Button>
                         </Link>
                     </div>
 

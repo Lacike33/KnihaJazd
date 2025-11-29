@@ -9,7 +9,7 @@ export default function LoginPage() {
                 <div className="mx-auto max-w-md">
                     <div className="mb-8 text-center">
                         <h1 className="text-3xl font-bold mb-2">Prihlásenie</h1>
-                        <p className="text-muted-foreground">Prihláste sa do svojho účtu Knihy jázd</p>
+                        <p className="text-muted-foreground">Prihláste sa do svojho účtu Denníka jázd</p>
                     </div>
                     <LoginForm/>
                 </div>

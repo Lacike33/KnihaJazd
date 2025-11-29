@@ -8,7 +8,7 @@ export default function RegisterPage() {
       <main className="container mx-auto px-4 py-12">
         <div className="mx-auto max-w-md">
           <div className="mb-8 text-center">
-            <h1 className="text-3xl font-bold mb-2">Začnite s Knihou jázd</h1>
+            <h1 className="text-3xl font-bold mb-2">Začnite s Denníkom jázd</h1>
             <p className="text-muted-foreground">Vytvorte si účet a získajte prístup k elektronickej evidencii jázd</p>
           </div>
           <ClientRegistrationForm />

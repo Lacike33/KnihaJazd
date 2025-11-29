@@ -86,7 +86,7 @@ export function TopBar() {
                                 <span className="hidden sm:inline">Prihlásenie</span>
                             </Button>
                         </Link>
-                        <Link href="/login">
+                        <Link href="/register">
                             {/*<Button size="sm" className="h-8 text-sm">*/}
                             <Button size="sm" variant="outline">
                                 <UserPlus className="h-4 w-4 sm:mr-2"/>

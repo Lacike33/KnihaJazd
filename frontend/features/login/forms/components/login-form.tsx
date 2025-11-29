@@ -129,18 +129,19 @@ export function LoginForm() {
 
                 <div className="text-center">
                     <p className="text-sm text-muted-foreground">
-                        Ste partner?{" "}
-                        <Link href="/partners/register" className="text-primary font-semibold hover:underline">
-                            Registrácia partnera
+                        Ešte nemáte účet?{" "}
+                        <Link href="/register" className="text-primary font-semibold hover:underline">
+                            Zaregistrovať sa
                         </Link>
+
                     </p>
                 </div>
 
                 <div className="text-center pt-4 border-t">
                     <p className="text-sm text-muted-foreground">
-                        Ešte nemáte účet?{" "}
-                        <Link href="/register" className="text-primary font-semibold hover:underline">
-                            Zaregistrovať sa
+                        Chcete byť partner?{" "}
+                        <Link href="/partners/register" className="text-primary font-semibold hover:underline">
+                            Registrácia partnera
                         </Link>
                     </p>
                 </div>

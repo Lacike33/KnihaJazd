@@ -19,10 +19,10 @@ export function HeroSection() {
 
                     <div className="space-y-4">
                         <h1 className="text-4xl font-bold leading-tight tracking-tight text-balance md:text-5xl lg:text-6xl">
-                            Elektronická kniha jázd, ktorá vás chráni
+                            Elektronický denník jázd, ktorý vás chráni
                         </h1>
                         <p className="text-lg text-muted-foreground text-pretty md:text-xl">
-                            Jednoduchá elektronická evidencia jázd podľa § 85n zákona o DPH. Chráni podnikateľa, stráži
+                            Inteligentná elektronická evidencia jázd podľa § 85n zákona o DPH. Chráni podnikateľa, stráži
                             povinnosti,
                             odhalí chyby skôr než kontrola.
                         </p>

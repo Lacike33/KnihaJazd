@@ -77,7 +77,7 @@ export function CarDealersSection() {
 
           <div className="text-center">
             <Button size="lg" asChild>
-              <a href="/affiliate">Stať sa partnerským predajcom</a>
+              <a href="/partners/register">Stať sa partnerským predajcom</a>
             </Button>
             <p className="text-sm text-muted-foreground mt-4">
               Registrácia je zdarma. Podmienky sa dohodneme individuálne.
