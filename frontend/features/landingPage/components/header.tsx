@@ -41,7 +41,7 @@ export function Header() {
                         <a href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">
                             Cenník
                         </a>
-                        <a href="#partners" className="text-sm font-medium hover:text-primary transition-colors">
+                        <a href="/partners" className="text-sm font-medium hover:text-primary transition-colors">
                             Pre partnerov
                         </a>
                         <a href="#faq" className="text-sm font-medium hover:text-primary transition-colors">
