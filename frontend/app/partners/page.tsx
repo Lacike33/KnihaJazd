@@ -27,7 +27,9 @@ export default function PartnersPage() {
                                     <Link href="/partners/register">Zaregistrovať sa ako partner</Link>
                                 </Button>
                                 <Button size="lg" variant="outline">
-                                    Kontaktovať nás
+                                    <Link href={'/contact'}>
+                                        Kontaktovať nás
+                                    </Link>
                                 </Button>
                             </div>
                         </div>

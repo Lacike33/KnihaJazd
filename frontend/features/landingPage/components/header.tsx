@@ -47,6 +47,9 @@ export function Header() {
                         <a href="#faq" className="text-sm font-medium hover:text-primary transition-colors">
                             FAQ
                         </a>
+                        {/*<a href="/contact" className="text-sm font-medium hover:text-primary transition-colors">*/}
+                        {/*    Kontakt*/}
+                        {/*</a>*/}
                         <Link href={"/demo"}>
                             <Button className="w-full">Vyskúšať DEMO</Button>
                         </Link>
