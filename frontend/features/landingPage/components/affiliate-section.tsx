@@ -12,7 +12,7 @@ export function AffiliateSection() {
               Odporučte nás a znížte si vlastné náklady
             </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              Každý platící zákazník má v aplikácii svoju sekciu „Affiliate", kde nájde osobný odkaz. Stačí ho poslať
+              Každý platící zákazník má v aplikácii svoju sekciu &ldquo;Affiliate&rdquo;, kde nájde osobný odkaz. Stačí ho poslať
               kolegovi, známemu podnikateľovi alebo klientovi – a za každého nového platiaceho používateľa získavate
               odmenu.
             </p>
@@ -57,7 +57,7 @@ export function AffiliateSection() {
 
           <div className="text-center">
             <Button size="lg" variant="outline" asChild>
-              <a href="/affiliate">Viac o affiliate programe</a>
+              <a href="/partners">Viac o affiliate programe</a>
             </Button>
           </div>
         </div>

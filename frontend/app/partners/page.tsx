@@ -1,327 +1,231 @@
-"use client";
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatsCards } from "@/features/affiliate/components/stats-cards";
-import { ReferralLinkSection } from "@/features/affiliate/components/referral-link-section";
-import { useAuth } from "@/providers/auth-provider";
-import { useQuery } from "@tanstack/react-query";
-import { getAffiliateStats, getPartnerSettings, getAffiliateReferrals, getAffiliateHistory, requestPayout } from "@/lib/api/affiliate";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
-import { sk } from "date-fns/locale";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import {Button} from "@/components/ui/button"
+import {Card} from "@/components/ui/card"
+import {Header} from "@/features/landingPage/components/header";
+import {Footer} from "@/features/landingPage/components/footer";
+import {Users, Link2, Coins, BarChart3, CheckCircle2, TrendingUp} from "lucide-react"
+import Link from "next/link"
 
 export default function AffiliatePage() {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [isRequesting, setIsRequesting] = useState(false);
-
-  const { data: partnerSettings, isLoading: isLoadingSettings } = useQuery({
-    queryKey: ["partnerSettings", user?.id],
-    queryFn: () => getPartnerSettings(user!.id),
-    enabled: !!user,
-  });
-
-  const { data: stats, isLoading: isLoadingStats } = useQuery({
-    queryKey: ["affiliateStats", user?.id],
-    queryFn: () => getAffiliateStats(user!.id),
-    enabled: !!user,
-  });
-
-  const { data: referrals, isLoading: isLoadingReferrals } = useQuery({
-    queryKey: ["affiliateReferrals", user?.id],
-    queryFn: () => getAffiliateReferrals(user!.id),
-    enabled: !!user && !!partnerSettings,
-  });
-
-  const { data: history, isLoading: isLoadingHistory } = useQuery({
-    queryKey: ["affiliateHistory", user?.id],
-    queryFn: () => getAffiliateHistory(user!.id),
-    enabled: !!user,
-  });
-
-  const isPartner = partnerSettings?.isPartner || user?.role === "accountant" || user?.role === "admin";
-  const isLoading = isLoadingSettings || isLoadingStats;
-
-  const handleRequestPayout = async () => {
-    if (!stats?.pendingCommission || stats.pendingCommission <= 0) return;
-
-    setIsRequesting(true);
-    try {
-      await requestPayout(user!.id, stats.pendingCommission);
-      toast({
-        title: "Žiadosť odoslaná",
-        description: "Vaša žiadosť o vyplatenie bola úspešne odoslaná.",
-      });
-    } catch (error) {
-      toast({
-        title: "Chyba",
-        description: "Nepodarilo sa odoslať žiadosť o vyplatenie.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsRequesting(false);
-    }
-  };
-
-  if (isLoading) {
     return (
-      <div className="space-y-6 p-6">
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-96 w-full" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold">Affiliate & Partnerský Program</h1>
-        <p className="mt-2 text-muted-foreground">
-          {isPartner
-            ? "Pomáhajte klientom viesť elektronickú knihu jázd podľa zákona a získajte odmenu za každého platiaceho používateľa, ktorého odporučíte."
-            : "Odporučte aplikáciu známym alebo kolegom a získajte bonusové mesiace predplatného alebo províziu."}
-        </p>
-      </div>
-
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Prehľad</TabsTrigger>
-          <TabsTrigger value="link">Odporúčací link</TabsTrigger>
-          {isPartner && <TabsTrigger value="rewards">Odmeny</TabsTrigger>}
-          {isPartner && <TabsTrigger value="history">História</TabsTrigger>}
-          <TabsTrigger value="howto">Ako to funguje?</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          {stats && <StatsCards stats={stats} isPartner={isPartner} />}
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Informácie</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {isPartner
-                  ? "Ako partner získavate províziu za každého odporučeného platiaceho používateľa. Provízia sa počíta z prvého zaplateného obdobia aj z každého ďalšieho predĺženia predplatného."
-                  : "Každý mesiac predplatného, ktorý odporučený zákazník uhradí, vám prináša kredit na váš vlastný účet alebo zvýhodnené mesiace."}
-              </p>
-            </CardContent>
-          </Card>
-
-          {stats && stats.totalReferrals === 0 && (
-            <Card className="border-dashed">
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="mb-2 text-lg font-semibold">{isPartner ? "Zatiaľ nemáte žiadnych odporučených klientov" : "Začnite odporúčať"}</h3>
-                <p className="mb-4 text-sm text-muted-foreground">{isPartner ? "Začnite tým, že skopírujete svoj odporúčací link a pošlete ho klientom." : "Odporučte aplikáciu a získajte bonusové mesiace predplatného."}</p>
-                <Button asChild>
-                  <a href="#link">Zobraziť odporúčací link</a>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="link">
-          {partnerSettings?.referralCode ? (
-            <ReferralLinkSection referralCode={partnerSettings.referralCode} />
-          ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                <AlertCircle className="mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="mb-2 text-lg font-semibold">Affiliate program nie je aktivovaný</h3>
-                <p className="mb-4 text-sm text-muted-foreground">Kontaktujte podporu pre aktiváciu affiliate programu.</p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        {isPartner && (
-          <TabsContent value="rewards" className="space-y-6">
-            <div className="grid gap-4 md:grid-cols-3">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Celková provízia</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">€ {stats?.totalCommission.toFixed(2)}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Čakajúca provízia</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">€ {stats?.pendingCommission.toFixed(2)}</div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-medium">Vyplatené</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">€ {stats?.paidCommission.toFixed(2)}</div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Vyplatenie provízie</CardTitle>
-                    <CardDescription>Požiadajte o vyplatenie vašej provízie</CardDescription>
-                  </div>
-                  <Button onClick={handleRequestPayout} disabled={!stats?.pendingCommission || stats.pendingCommission <= 0 || isRequesting}>
-                    {isRequesting ? "Spracováva sa..." : "Požiadať o vyplatenie"}
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Dátum</TableHead>
-                      <TableHead>Klient</TableHead>
-                      <TableHead>Stav</TableHead>
-                      <TableHead className="text-right">Suma</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {referrals && referrals.length > 0 ? (
-                      referrals.map((referral) => (
-                        <TableRow key={referral.id}>
-                          <TableCell>{referral.activationDate ? format(new Date(referral.activationDate), "dd.MM.yyyy", { locale: sk }) : "-"}</TableCell>
-                          <TableCell>{referral.referredEmail}</TableCell>
-                          <TableCell>
-                            <Badge variant={referral.status === "active" ? "default" : "secondary"}>{referral.status === "active" ? "Aktívny" : "Čakajúci"}</Badge>
-                          </TableCell>
-                          <TableCell className="text-right">€ {referral.commissionAmount.toFixed(2)}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center text-muted-foreground">
-                          Zatiaľ žiadne provízie
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
-
-        {isPartner && (
-          <TabsContent value="history">
-            <Card>
-              <CardHeader>
-                <CardTitle>História aktivít</CardTitle>
-                <CardDescription>Prehľad všetkých aktivít vo vašom affiliate účte</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Dátum</TableHead>
-                      <TableHead>Akcia</TableHead>
-                      <TableHead>Klient</TableHead>
-                      <TableHead className="text-right">Hodnota</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {history && history.length > 0 ? (
-                      history.map((item) => (
-                        <TableRow key={item.id}>
-                          <TableCell>{format(new Date(item.date), "dd.MM.yyyy HH:mm", { locale: sk })}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              {item.action === "activation" && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-                              {item.action === "signup" && <Clock className="h-4 w-4 text-blue-500" />}
-                              {item.action === "renewal" && <CheckCircle2 className="h-4 w-4 text-green-500" />}
-                              <span className="text-sm">{item.description}</span>
+        <div className="min-h-screen">
+            <Header/>
+            <main>
+                {/* Hero Section */}
+                <section className="py-20 bg-gradient-to-b from-primary/5 to-background">
+                    <div className="container mx-auto px-4">
+                        <div className="mx-auto max-w-4xl text-center space-y-6">
+                            <h1 className="text-4xl font-bold tracking-tight text-balance md:text-5xl lg:text-6xl">
+                                Partnerský a affiliate program
+                            </h1>
+                            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                                Zarábajte provízie alebo získavajte kredity na predplatné, keď odporučíte Knihu jázd
+                                svojim klientom,
+                                kolegom alebo známym.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                                <Button size="lg" asChild>
+                                    <Link href="/partners/register">Zaregistrovať sa ako partner</Link>
+                                </Button>
+                                <Button size="lg" variant="outline">
+                                    Kontaktovať nás
+                                </Button>
                             </div>
-                          </TableCell>
-                          <TableCell>{item.clientEmail || "-"}</TableCell>
-                          <TableCell className="text-right">{item.amount ? `€ ${item.amount.toFixed(2)}` : "-"}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={4} className="text-center text-muted-foreground">
-                          Zatiaľ žiadna história
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
+                        </div>
+                    </div>
+                </section>
 
-        <TabsContent value="howto">
-          <Card>
-            <CardHeader>
-              <CardTitle>Jednoduchý spôsob, ako zarábať pomocou odporúčaní</CardTitle>
-              <CardDescription>Ako funguje affiliate program</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">1</div>
-                  <div>
-                    <h3 className="font-semibold">Zdieľajte svoj link</h3>
-                    <p className="text-sm text-muted-foreground">Každý klik, registrácia a platba sa sleduje automaticky.</p>
-                  </div>
-                </div>
+                {/* Pre účtovníkov */}
+                <section className="py-20 border-t">
+                    <div className="container mx-auto px-4">
+                        <div className="mx-auto max-w-5xl space-y-12">
+                            <div className="space-y-4 text-center">
+                                <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Pre účtovníkov a daňových
+                                    poradcov</h2>
+                                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                                    Pomôžte svojim klientom splniť zákonné požiadavky a získajte za to odmenu
+                                </p>
+                            </div>
 
-                <div className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">2</div>
-                  <div>
-                    <h3 className="font-semibold">Klient si vytvorí účet</h3>
-                    <p className="text-sm text-muted-foreground">Nie je potrebné nič potvrdzovať.</p>
-                  </div>
-                </div>
+                            <div className="grid gap-6 md:grid-cols-2">
+                                <Card className="p-8">
+                                    <h3 className="text-xl font-bold mb-4">Výzva vašich klientov</h3>
+                                    <ul className="space-y-3 text-muted-foreground">
+                                        <li className="flex gap-3">
+                                            <span className="text-destructive">•</span>
+                                            <span>Od roku 2026 prísnejšie pravidlá pre knihy jázd a DPH</span>
+                                        </li>
+                                        <li className="flex gap-3">
+                                            <span className="text-destructive">•</span>
+                                            <span>Neistota, či vedú evidenciu správne</span>
+                                        </li>
+                                        <li className="flex gap-3">
+                                            <span className="text-destructive">•</span>
+                                            <span>Manuálne Excel tabuľky sú časovo náročné a nespoľahlivé</span>
+                                        </li>
+                                        <li className="flex gap-3">
+                                            <span className="text-destructive">•</span>
+                                            <span>Chýbajúce dôkazy a fotodokumentácia</span>
+                                        </li>
+                                    </ul>
+                                </Card>
 
-                <div className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">3</div>
-                  <div>
-                    <h3 className="font-semibold">Klient začne platiť za aplikáciu</h3>
-                    <p className="text-sm text-muted-foreground">A vám sa započíta provízia / bonus.</p>
-                  </div>
-                </div>
+                                <Card className="p-8 bg-primary/5 border-primary/20">
+                                    <h3 className="text-xl font-bold mb-4">Vaše riešenie s Knihou jázd</h3>
+                                    <ul className="space-y-3 text-muted-foreground">
+                                        <li className="flex gap-3">
+                                            <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5"/>
+                                            <span>Klienti vedú evidenciu podľa § 85n automaticky</span>
+                                        </li>
+                                        <li className="flex gap-3">
+                                            <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5"/>
+                                            <span>Ušetríte čas pri vysvetľovaní a kontrole</span>
+                                        </li>
+                                        <li className="flex gap-3">
+                                            <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5"/>
+                                            <span>Fotodokumentácia a archivácia zaručená</span>
+                                        </li>
+                                        <li className="flex gap-3">
+                                            <CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0 mt-0.5"/>
+                                            <span>A vy získavate províziu za každého klienta</span>
+                                        </li>
+                                    </ul>
+                                </Card>
+                            </div>
 
-                <div className="flex gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">4</div>
-                  <div>
-                    <h3 className="font-semibold">Odmenu si môžete vybrať</h3>
-                    <p className="text-sm text-muted-foreground">Buď vyplatenie alebo bonusové mesiace.</p>
-                  </div>
-                </div>
-              </div>
+                            <div className="space-y-6">
+                                <h3 className="text-2xl font-bold text-center">Ako funguje partnerský program</h3>
+                                <div className="grid gap-6 md:grid-cols-3">
+                                    <Card className="p-6">
+                                        <div
+                                            className="mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-primary/10">
+                                            <Users className="h-7 w-7 text-primary"/>
+                                        </div>
+                                        <h4 className="text-lg font-semibold mb-2">1. Zaregistrujte sa</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                            Vytvorte si účet účtovníka/partnera a získajte svoj osobný partnerský odkaz.
+                                        </p>
+                                    </Card>
 
-              <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-                <CardContent className="pt-6">
-                  <p className="text-sm">
-                    <strong>Upozornenie:</strong> Affiliate program je určený pre všetkých používateľov, partnerský program je určený pre účtovníkov, poradcov a firmy.
-                  </p>
-                </CardContent>
-              </Card>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+                                    <Card className="p-6">
+                                        <div
+                                            className="mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-primary/10">
+                                            <Link2 className="h-7 w-7 text-primary"/>
+                                        </div>
+                                        <h4 className="text-lg font-semibold mb-2">2. Zdieľajte odkaz</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                            Pošlite link emailom, pridajte do podpisu, fakturačného systému alebo na váš
+                                            web.
+                                        </p>
+                                    </Card>
+
+                                    <Card className="p-6">
+                                        <div
+                                            className="mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-primary/10">
+                                            <Coins className="h-7 w-7 text-primary"/>
+                                        </div>
+                                        <h4 className="text-lg font-semibold mb-2">3. Získavajte odmenu</h4>
+                                        <p className="text-sm text-muted-foreground">
+                                            Za každého platiaceho klienta dostanete províziu v € alebo kredity na
+                                            vlastné predplatné.
+                                        </p>
+                                    </Card>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Affiliate pre všetkých */}
+                <section className="py-20 border-t bg-muted/30">
+                    <div className="container mx-auto px-4">
+                        <div className="mx-auto max-w-5xl space-y-12">
+                            <div className="space-y-4 text-center">
+                                <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
+                                    Affiliate program pre všetkých zákazníkov
+                                </h2>
+                                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                                    Nie ste účtovník? Žiadny problém. Každý platící zákazník má prístup k vlastnému
+                                    odporúčaciemu linku
+                                    priamo v aplikácii.
+                                </p>
+                            </div>
+
+                            <div className="grid gap-6 md:grid-cols-3">
+                                <Card className="p-6">
+                                    <div
+                                        className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                                        <Link2 className="h-6 w-6 text-primary"/>
+                                    </div>
+                                    <h3 className="text-lg font-semibold mb-2">Vlastný referenčný link</h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        V sekcii &ldquo;Affiliate&rdquo; nájdete svoj jedinečný odkaz pripravený na zdieľanie.
+                                    </p>
+                                </Card>
+
+                                <Card className="p-6">
+                                    <div
+                                        className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                                        <TrendingUp className="h-6 w-6 text-primary"/>
+                                    </div>
+                                    <h3 className="text-lg font-semibold mb-2">Odmena za odporúčanie</h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        Provízia na účet alebo kredity znižujúce vaše vlastné náklady na predplatné.
+                                    </p>
+                                </Card>
+
+                                <Card className="p-6">
+                                    <div
+                                        className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
+                                        <BarChart3 className="h-6 w-6 text-primary"/>
+                                    </div>
+                                    <h3 className="text-lg font-semibold mb-2">Prehľadný dashboard</h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        Sledujte kliky, registrácie, a vaše celkové výnosy v reálnom čase.
+                                    </p>
+                                </Card>
+                            </div>
+
+                            <Card className="p-8 bg-background">
+                                <h3 className="text-xl font-bold mb-4">Príklad výpočtu</h3>
+                                <div className="space-y-4 text-muted-foreground">
+                                    <p>Predstavte si, že odporučíte aplikáciu 5 kolegom podnikateľom:</p>
+                                    <ul className="space-y-2 list-disc list-inside ml-4">
+                                        <li>3 si vyberú Štartovací balík (19 € / mesiac)</li>
+                                        <li>2 si vyberú Rozšírený balík (39 € / mesiac)</li>
+                                    </ul>
+                                    <p className="font-semibold text-foreground pt-2">
+                                        = pravidelná mesačná odmena + možnosť vlastného predplatného zadarmo
+                                    </p>
+                                    <p className="text-sm italic">Presné percentá a podmienky zistíte po
+                                        registrácii.</p>
+                                </div>
+                            </Card>
+                        </div>
+                    </div>
+                </section>
+
+                {/* CTA Section */}
+                <section className="py-20 border-t">
+                    <div className="container mx-auto px-4">
+                        <div className="mx-auto max-w-3xl text-center space-y-8">
+                            <h2 className="text-3xl font-bold tracking-tight md:text-4xl">Pripravení začať?</h2>
+                            <p className="text-lg text-muted-foreground">
+                                Či už ste účtovník, daňový poradca, alebo len spokojný zákazník – môžete zarábať
+                                odporúčaním Knihu jázd.
+                            </p>
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <Button size="lg" asChild>
+                                    <Link href="/partners/register">Vytvoriť partnerský účet</Link>
+                                </Button>
+                                <Button size="lg" variant="outline">
+                                    Máte otázky? Kontaktujte nás
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+            <Footer/>
+        </div>
+    )
 }
